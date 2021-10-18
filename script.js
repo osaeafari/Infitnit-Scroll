@@ -54,6 +54,14 @@ async function getPhotos() {
     }
 }
 
+//check to see if scrolling near buttom of page, load More Photos
+window.addEventListener('scroll', () => {
+    if(window.innerHeight + window.scrollY >= document.body.offsetHeight - 1000){
+        getPhotos();
+        console.log('load more'); 
+    }
+});
+
 
 // On Load
 getPhotos();
