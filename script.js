@@ -1,13 +1,30 @@
 const imageContainer = document.getElementById('image-container');
 const loader = document.getElementById('loader');
 
+let ready = false;
+let imagesLoaded = 0;
+let totalImages = 0;
 let photosArray = [];
-
+let isInitialLoad = true;
 
 // Unsplash API
-const count = 10;
-const apiKey = '1bhtvrfjIDTiJ-6RZy424Tk4A0z3wDs9R1rVRQE-jTg';
-const apiUrl =`https://api.unsplash.com/photos/ramdom/?client_id=${apiKey}&count=${count}`;
+const count = 5;
+const apiKey = 'YOUR API KEY';
+let apiUrl =`https://api.unsplash.com/photos/ramdom/?client_id=${apiKey}&count=${count}`;
+
+// Picture Update
+function updateAPIURLWithNewCount (picCount) {
+    apiUrl = `https://api.unsplash.com/photos/ramdom/?client_id=${apiKey}&count=${count}`;
+}
+
+// check if all images were loaded
+function imageLoaded(){
+    imagesLoaded++;
+    if (imagesLoaded === totalImages) {
+        ready = true;
+        loader.hidden = true;
+    }
+}
 
 
 // Helper function to set Attributes on DOM Elements
@@ -20,6 +37,9 @@ function setAttribute(element, attributes) {
 
 // Create Elements for links & photos, add to DOM
 function displayPhotos(){
+    imagesLoaded = 0;
+    totalImages = photosArray.length;
+
     //Run function for each object in photosArray
     photosArray.forEach((photo) => {
         //Create <a> to link to unsplash
@@ -36,6 +56,8 @@ function displayPhotos(){
             alt: photo.alt_description,
             title: photo.alt_description
         });
+        // Event Listener, check when each is finished loading
+        img.addEventListener('load', imageLoaded);
 
         // put <img> inside <a>, then put both inside image Container Element</a>
         item.appendChild(img);
@@ -43,12 +65,17 @@ function displayPhotos(){
     });
 }
 
+
 // Get photos from Unsplash API
 async function getPhotos() {
     try {
         const response = await fetch(apiUrl);
         photosArray = await response.json();
-        console.log(photosArray);
+        displayPhotos();
+        if (isInitialLoad) {
+            updateAPIURLWithNewCount(30);
+            isInitialLoad = false;
+        }
     } catch (error) {
         // catch Error Here
     }
@@ -56,9 +83,9 @@ async function getPhotos() {
 
 //check to see if scrolling near buttom of page, load More Photos
 window.addEventListener('scroll', () => {
-    if(window.innerHeight + window.scrollY >= document.body.offsetHeight - 1000){
+    if(window.innerHeight + window.scrollY >= document.body.offsetHeight - 1000 && ready){
+        ready = false;
         getPhotos();
-        console.log('load more'); 
     }
 });
 
